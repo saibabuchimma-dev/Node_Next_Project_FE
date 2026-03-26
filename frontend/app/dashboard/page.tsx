@@ -8,33 +8,56 @@ import {
   toggleTask,
   updateTask,
 } from "../services/taskService";
+import { toast } from "react-toastify";
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [title, setTitle] = useState("");
   const [editId, setEditId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const fetchTasks = async () => {
-    const data = await getTasks();
-    setTasks(data);
+    try {
+      setLoading(true);
+      const data = await getTasks();
+      setTasks(data);
+    } catch (err) {
+      toast.error("Failed to fetch tasks");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addTask = async () => {
-    if (!title) return;
-    await createTask(title);
-    setTitle("");
-    fetchTasks();
+    if (!title) return toast.error("Task cannot be empty");
+    try {
+      await createTask(title);
+      toast.success("Task added");
+      setTitle("");
+      fetchTasks();
+    } catch {
+      toast.error("Failed to add task");
+    }
   };
 
   const handleDelete = async (id: number) => {
-    await deleteTask(id);
-    fetchTasks();
+    try {
+      await deleteTask(id);
+      toast.success("Task deleted");
+      fetchTasks();
+    } catch {
+      toast.error("Delete failed");
+    }
   };
 
   const handleToggle = async (id: number) => {
-    await toggleTask(id);
-    fetchTasks();
+    try {
+      await toggleTask(id);
+      fetchTasks();
+    } catch {
+      toast.error("Update failed");
+    }
   };
 
   const handleUpdate = async (id: number) => {
@@ -54,82 +77,99 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-5">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">Dashboard</h1>
-        <button
-          className="bg-red-500 text-white px-3 py-1"
-          onClick={handleLogout}
-        >
-          Logout
-        </button>
-      </div>
+    <div className="min-h-screen bg-gray-100 flex justify-center p-6">
+      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800">
+            📝 Task Manager
+          </h1>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 hover:bg-red-600 transition text-white px-4 py-2 rounded-lg"
+          >
+            Logout
+          </button>
+        </div>
 
-      <div className="flex gap-2">
-        <input
-          className="border p-2 flex-1"
-          placeholder="New Task"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <button className="bg-blue-500 text-white px-4" onClick={addTask}>
-          Add
-        </button>
-      </div>
-
-    <ul className="mt-5 space-y-2">
-  {tasks.map((task) => (
-    <li
-      key={task.id}
-      className="flex justify-between items-center border p-2"
-    >
-      {editId === task.id ? (
-        <>
+        <div className="flex gap-3 mb-6">
           <input
-            className="border p-1 flex-1"
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
+            className="flex-1 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="Add a new task..."
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
           />
-
           <button
-            className="bg-green-500 text-white px-2"
-            onClick={() => handleUpdate(task.id)}
+            onClick={addTask}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-5 rounded-lg"
           >
-            Save
+            Add
           </button>
-        </>
-      ) : (
-        <>
-          <span
-            onClick={() => handleToggle(task.id)}
-            className={`cursor-pointer ${
-              task.completed ? "line-through text-gray-500" : ""
-            }`}
-          >
-            {task.title}
-          </span>
+        </div>
 
-          <button
-            className="bg-yellow-500 text-white px-2"
-            onClick={() => {
-              setEditId(task.id);
-              setEditTitle(task.title);
-            }}
-          >
-            Edit
-          </button>
+        {loading ? (
+          <p className="text-center mt-5">Loading...</p>
+        ) : (
+          <div className="space-y-3">
+            {tasks.map((task) => (
+              <div
+                key={task.id}
+                className="flex items-center justify-between bg-gray-50 border rounded-xl p-3 hover:shadow-sm transition"
+              >
+                {editId === task.id ? (
+                  <div className="flex gap-2 w-full">
+                    <input
+                      className="flex-1 border p-2 rounded-lg"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                    />
+                    <button
+                      onClick={() => handleUpdate(task.id)}
+                      className="bg-green-500 hover:bg-green-600 text-white px-3 rounded-lg"
+                    >
+                      Save
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <span
+                      onClick={() => handleToggle(task.id)}
+                      className={`flex-1 cursor-pointer text-gray-700 ${
+                        task.completed ? "line-through text-gray-400" : ""
+                      }`}
+                    >
+                      {task.title}
+                    </span>
 
-          <button
-            onClick={() => handleDelete(task.id)}
-            className="bg-red-500 text-white px-2"
-          >
-            X
-          </button>
-        </>
-      )}
-    </li>
-  ))}
-</ul>
+                    <div className="flex gap-2 ml-3">
+                      <button
+                        onClick={() => {
+                          setEditId(task.id);
+                          setEditTitle(task.title);
+                        }}
+                        className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded-lg text-sm"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(task.id)}
+                        className="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded-lg text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        {tasks.length === 0 && (
+          <p className="text-center text-gray-400 mt-6">
+            No tasks yet. Add one 🚀
+          </p>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,22 +1,25 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { loginUser } from "../services/authService";
+import { toast } from "react-toastify";
 
 const Login = () => {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     try {
+      setLoading(true);
       const data = await loginUser({ email, password });
       localStorage.setItem("token", data.token);
-      alert("Login Successful 🚀");
-      router.push("/dashboard");
+      toast.success("Login Successful 🚀");
+      window.location.href = "/dashboard";
     } catch (err: any) {
-      alert(err?.response?.data?.message || "Login Failed");
+      toast.error(err?.response?.data?.message || "Login Failed");
+    } finally {
+      setLoading(false);
     }
   };
 
