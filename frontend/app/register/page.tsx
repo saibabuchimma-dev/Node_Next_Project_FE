@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { registerUser } from "../services/authService";
+import { toast } from "react-toastify";
 
 const Register = () => {
   const router = useRouter();
@@ -20,10 +21,10 @@ const Register = () => {
         age: Number(age),
         password,
       });
-      alert("Registered Successfully 🚀");
+      toast("Registered Successfully 🚀");
       router.push('/login');
     } catch (err: any) {
-      alert(err?.response?.data?.message || "Registration failed");
+      toast(err?.response?.data?.message || "Registration failed");
     }
   };
   return (
