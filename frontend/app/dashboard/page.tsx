@@ -11,7 +11,7 @@ import {
 import { toast } from "react-toastify";
 
 const Dashboard = () => {
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<{ id: number; title: string; completed: boolean }[]>([]);
   const [title, setTitle] = useState("");
   const [editId, setEditId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState("");
