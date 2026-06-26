@@ -16,8 +16,8 @@ const Login = () => {
       localStorage.setItem("token", data.token);
       toast.success("Login Successful 🚀");
       window.location.href = "/dashboard";
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Login Failed");
+    } catch (err: unknown) {
+      toast.error((err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Login Failed");
     } finally {
       setLoading(false);
     }

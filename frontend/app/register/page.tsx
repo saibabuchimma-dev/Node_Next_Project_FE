@@ -23,8 +23,8 @@ const Register = () => {
       });
       toast("Registered Successfully 🚀");
       router.push('/login');
-    } catch (err: any) {
-      toast(err?.response?.data?.message || "Registration failed");
+    } catch (err: unknown) {
+      toast((err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Registration failed");
     }
   };
   return (
